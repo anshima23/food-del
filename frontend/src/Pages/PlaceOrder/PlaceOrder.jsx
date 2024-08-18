@@ -1,9 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
-import axios from 'axios'; // Import axios here
+import axios from 'axios';
 import './PlaceOrder.css';
 import { StoreContext } from '../../context/StoreContext';
 import { useNavigate } from 'react-router-dom';
-
 
 const PlaceOrder = () => {
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
@@ -26,10 +25,10 @@ const PlaceOrder = () => {
     setData(data => ({ ...data, [name]: value }));
   };
 
-  const handlePlaceOrder = async (event) => {
+  const PlaceOrder = async (event) => {
     event.preventDefault();
     let orderItems = [];
-    food_list.forEach((item) => {
+    food_list.map((item) => {
       if (cartItems[item._id] > 0) {
         let itemInfo = item;
         itemInfo["quantity"] = cartItems[item._id];
@@ -42,33 +41,27 @@ const PlaceOrder = () => {
       amount: getTotalCartAmount() + 2,
     };
 
-    try {
-      let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
-      if (response.data.success) {
-        const { session_url } = response.data;
-        window.location.replace(session_url);
-      } else {
-        alert("Error: " + response.data.message || "An error occurred");
-      }
-    } catch (error) {
-      console.error("An error occurred:", error);
-      alert("Error: " + (error.response?.data?.message || "An error occurred"));
+    let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
+    if (response.data.success) {
+      const { session_url } = response.data;
+      window.location.replace(session_url); 
+    }
+    else {
+      alert("Error: " + response.data.message || "An error occurred");
     }
   };
+  
 
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    if(!token){
-      navigate('/cart')
+  useEffect(() => {
+    if (!token || getTotalCartAmount() === 0) {
+      navigate('/cart');
     }
-    else if(getTotalCartAmount()===0){
-      navigate('/cart')
-    }
-  })
+  }, [token, getTotalCartAmount, navigate]);
 
   return (
-    <form onSubmit={handlePlaceOrder} className='place-order'>
+    <form onSubmit={PlaceOrder} className='place-order'>
       <div className="place-order-left">
         <p className='title'>Delivery Information</p>
         <div className='multi-fields'>
